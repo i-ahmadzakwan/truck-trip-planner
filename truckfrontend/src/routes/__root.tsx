@@ -77,19 +77,19 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "RouteLog | Plan smarter. Drive compliant." },
+      { title: "RouteLog — HOS Trip Planner" },
       {
         name: "description",
         content:
-          "Premium trip planning and Hours-of-Service compliance for professional truck drivers.",
+          "Trip planning and FMCSA Hours-of-Service compliance for truck drivers.",
       },
       { property: "og:title", content: "RouteLog" },
       {
         property: "og:description",
-        content: "Plan smarter. Drive compliant.",
+        content: "HOS-compliant trip planning for truck drivers.",
       },
       { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:card", content: "summary" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
