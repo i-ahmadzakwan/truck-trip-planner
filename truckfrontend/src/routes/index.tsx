@@ -8,13 +8,13 @@ import { fetchTrip } from "@/lib/api";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "RouteLog — Plan smarter. Drive compliant." },
+      { title: "RouteLog | Plan smarter. Drive compliant." },
       {
         name: "description",
         content:
           "Trip planning and Hours-of-Service compliance for professional truck drivers.",
       },
-      { property: "og:title", content: "RouteLog — Plan smarter. Drive compliant." },
+      { property: "og:title", content: "RouteLog | Plan smarter. Drive compliant." },
       {
         property: "og:description",
         content: "Premium HOS trip planning built for the road.",
