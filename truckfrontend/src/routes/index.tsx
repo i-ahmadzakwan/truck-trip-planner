@@ -4,6 +4,7 @@ import { TripForm, type TripInput } from "@/components/TripForm";
 import { ResultsDashboard } from "@/components/ResultsDashboard";
 import type { RouteResult } from "@/lib/route-mock";
 import { fetchTrip } from "@/lib/api";
+import { ParticleNetwork } from "@/components/ParticleNetwork";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -63,6 +64,7 @@ function Index() {
 
   return (
     <main className="relative min-h-screen bg-dusk overflow-hidden">
+      <ParticleNetwork />
       <NavBar />
 
       {/* HERO */}
