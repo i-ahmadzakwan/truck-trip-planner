@@ -1,5 +1,7 @@
+import requests
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from rest_framework import status
 from .serializers import TripRequestSerializer
 from .hos_engine import HOSCalculator
 from .routing import geocode, get_route
@@ -11,10 +13,32 @@ def calculate_trip(request):
     serializer.is_valid(raise_exception=True)
     data = serializer.validated_data
 
-    pickup_coords = geocode(data["pickup_location"])
-    dropoff_coords = geocode(data["dropoff_location"])
+    try:
+        pickup_coords = geocode(data["pickup_location"])
+        dropoff_coords = geocode(data["dropoff_location"])
+        route_info = get_route(pickup_coords, dropoff_coords)
+    except requests.exceptions.Timeout:
+        return Response(
+            {"error": "Route service timed out. Check your internet connection and try again."},
+            status=status.HTTP_504_GATEWAY_TIMEOUT
+        )
+    except requests.exceptions.ConnectionError:
+        return Response(
+            {"error": "Could not reach the route service. Check your internet connection and try again."},
+            status=status.HTTP_503_SERVICE_UNAVAILABLE
+        )
+    except requests.exceptions.HTTPError as e:
+        return Response(
+            {"error": f"Route service returned an error: {e}"},
+            status=status.HTTP_502_BAD_GATEWAY
+        )
+    except ValueError as e:
+        # raised by geocode() when a location can't be found
+        return Response(
+            {"error": str(e)},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
-    route_info = get_route(pickup_coords, dropoff_coords)
     total_distance_miles = route_info["distance_miles"]
 
     calculator = HOSCalculator(

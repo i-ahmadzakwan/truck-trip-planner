@@ -27,14 +27,15 @@ class HOSCalculator:
         self.events = []  # list of dicts: {type, start_hr, end_hr, label}
         self.clock = 0.0  # cumulative hours since trip start
 
-    def add_event(self, event_type, duration_hr, label=""):
+    def add_event(self, event_type, duration_hr, label="", mile_marker=None):
         start = self.clock
         end = self.clock + duration_hr
         self.events.append({
             "type": event_type,
             "start_hr": round(start, 2),
             "end_hr": round(end, 2),
-            "label": label
+            "label": label,
+            "mile_marker": round(mile_marker, 1) if mile_marker is not None else None
         })
         self.clock = end
         if event_type in ("driving", "on_duty"):
@@ -63,7 +64,8 @@ class HOSCalculator:
 
             # Check 14-hr duty window
             if self.clock - duty_window_start >= MAX_DUTY_WINDOW_HR:
-                self.add_event("off_duty", REQUIRED_OFF_DUTY_HR, "Required rest (14hr window reached)")
+                miles_covered = self.total_distance - remaining_distance
+                self.add_event("off_duty", REQUIRED_OFF_DUTY_HR, "Required rest (14hr window reached)", mile_marker=miles_covered)
                 drive_since_break = 0.0
                 drive_in_window = 0.0
                 duty_window_start = self.clock
@@ -71,7 +73,8 @@ class HOSCalculator:
 
             # Check 30-min break after 8hr cumulative driving
             if drive_since_break >= BREAK_AFTER_DRIVE_HR:
-                self.add_event("off_duty", BREAK_DURATION_HR, "30-min break")
+                miles_covered = self.total_distance - remaining_distance
+                self.add_event("off_duty", BREAK_DURATION_HR, "30-min break", mile_marker=miles_covered)
                 drive_since_break = 0.0
                 continue
 
@@ -91,7 +94,8 @@ class HOSCalculator:
 
             if hours_this_chunk <= 0:
                 # Safety fallback to avoid infinite loop
-                self.add_event("off_duty", REQUIRED_OFF_DUTY_HR, "Required rest")
+                miles_covered = self.total_distance - remaining_distance
+                self.add_event("off_duty", REQUIRED_OFF_DUTY_HR, "Required rest", mile_marker=miles_covered)
                 drive_since_break = 0.0
                 drive_in_window = 0.0
                 duty_window_start = self.clock
@@ -104,11 +108,19 @@ class HOSCalculator:
             miles_since_fuel += miles_this_chunk
 
             if miles_since_fuel >= FUEL_INTERVAL_MILES and remaining_distance > 0:
-                self.add_event("on_duty", FUEL_DURATION_HR, "Fuel stop")
+                miles_covered = self.total_distance - remaining_distance
+                self.add_event("on_duty", FUEL_DURATION_HR, "Fuel stop", mile_marker=miles_covered)
                 miles_since_fuel = 0.0
 
         # Dropoff
         self.add_event("on_duty", DROPOFF_DURATION_HR, "Dropoff")
+
+        # Fill remainder of the current 24-hour day as off duty,
+        # so the daily log always totals 24 hours per FMCSA requirements
+        hours_into_day = self.clock % 24
+        if hours_into_day > 0:
+            remaining_today = 24 - hours_into_day
+            self.add_event("off_duty", remaining_today, "Off duty (end of trip)")
 
         return self.events
 

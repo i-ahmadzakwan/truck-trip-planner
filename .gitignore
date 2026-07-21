@@ -3,3 +3,8 @@ __pycache__/
 *.pyc
 db.sqlite3
 .env
+staticfiles/
+node_modules/
+
+staticfiles/
+node_modules/
