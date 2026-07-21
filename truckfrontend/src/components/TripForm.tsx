@@ -81,12 +81,19 @@ export function TripForm({
               </button>
             </div>
           </div>
-          <div className="relative h-2 rounded-full bg-[oklch(0.2_0.006_260)] border border-[color:var(--border)] overflow-hidden">
+          <div className="relative h-2 rounded-full bg-[oklch(0.2_0.006_260)] border border-[color:var(--border)] overflow-visible">
             <div
-              className="absolute inset-y-0 left-0 bg-red-gradient"
+              className="absolute inset-y-0 left-0 bg-red-gradient rounded-full"
               style={{
                 width: `${pct}%`,
                 boxShadow: "0 0 12px oklch(0.55 0.22 25 / 0.6)",
+              }}
+            />
+            <div
+              className="absolute top-1/2 h-4 w-4 rounded-full bg-white border-2 border-[color:var(--primary)] shadow-[0_0_10px_oklch(0.55_0.22_25/0.7)] pointer-events-none"
+              style={{
+                left: `${pct}%`,
+                transform: "translate(-50%, -50%)",
               }}
             />
           </div>
@@ -99,6 +106,9 @@ export function TripForm({
             onChange={(e) => setCycle(Number(e.target.value))}
             className="w-full mt-1 accent-[color:var(--primary)] opacity-0 h-6 -mt-4 relative cursor-pointer"
           />
+          <p className="mt-2 text-[11px] text-muted-foreground/70 text-center">
+            Drag the handle or use −/+ to adjust
+          </p>
         </div>
       </div>
 
