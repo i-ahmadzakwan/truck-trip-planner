@@ -134,7 +134,9 @@ STORAGES = {
 }
 
 
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOWED_ORIGINS = [
+    'https://truck-trip-planner-nine.vercel.app',
+]
 
 
 
