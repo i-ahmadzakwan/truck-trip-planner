@@ -59,7 +59,7 @@ def calculate_trip(request):
     })
 
 
-    @api_view(["GET"])
+@api_view(["GET"])
 def test_outbound(request):
     import requests, time
     start = time.time()
