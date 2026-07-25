@@ -57,3 +57,14 @@ def calculate_trip(request):
         "events": events,
         "daily_logs": days
     })
+
+
+    @api_view(["GET"])
+def test_outbound(request):
+    import requests, time
+    start = time.time()
+    try:
+        resp = requests.get("https://httpbin.org/get", timeout=15)
+        return Response({"status": "ok", "time": time.time() - start, "code": resp.status_code})
+    except Exception as e:
+        return Response({"status": "failed", "time": time.time() - start, "error": str(e)})
