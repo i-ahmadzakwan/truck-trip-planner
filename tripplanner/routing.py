@@ -1,41 +1,41 @@
 import time
 import requests
-from django.conf import settings
 
-ORS_BASE = "https://api.openrouteservice.org"
+NOMINATIM_URL = "https://nominatim.openstreetmap.org/search"
+OSRM_URL = "https://router.project-osrm.org/route/v1/driving"
+
+# Nominatim requires a descriptive User-Agent identifying the app (their usage policy)
+HEADERS = {"User-Agent": "RouteLog-TripPlanner/1.0 (student project)"}
 
 
 def geocode(place_name):
     """Convert a place name into (longitude, latitude)."""
-    print(f"[geocode] starting for: {place_name}", flush=True)
-    start = time.time()
-    url = f"{ORS_BASE}/geocode/search"
-    params = {"api_key": settings.ORS_API_KEY, "text": place_name, "size": 1}
-    resp = requests.get(url, params=params, timeout=25)
-    print(f"[geocode] done for {place_name} in {time.time() - start:.2f}s", flush=True)
+    params = {"q": place_name, "format": "json", "limit": 1}
+    resp = requests.get(NOMINATIM_URL, params=params, headers=HEADERS, timeout=15)
     resp.raise_for_status()
     data = resp.json()
-    if not data.get("features"):
+    if not data:
         raise ValueError(f"Could not find location: {place_name}")
-    coords = data["features"][0]["geometry"]["coordinates"]
-    return coords
+    lon = float(data[0]["lon"])
+    lat = float(data[0]["lat"])
+    return [lon, lat]
 
 
 def get_route(start_coords, end_coords):
     """Get driving route between two [lon, lat] points."""
-    print(f"[get_route] starting", flush=True)
-    start = time.time()
-    url = f"{ORS_BASE}/v2/directions/driving-car"
-    headers = {"Authorization": settings.ORS_API_KEY, "Content-Type": "application/json"}
-    body = {"coordinates": [start_coords, end_coords]}
-    resp = requests.post(url, json=body, headers=headers, timeout=25)
-    print(f"[get_route] done in {time.time() - start:.2f}s", flush=True)
+    lon1, lat1 = start_coords
+    lon2, lat2 = end_coords
+    url = f"{OSRM_URL}/{lon1},{lat1};{lon2},{lat2}"
+    params = {"overview": "full", "geometries": "polyline"}
+    resp = requests.get(url, params=params, timeout=20)
     resp.raise_for_status()
     data = resp.json()
+    if data.get("code") != "Ok" or not data.get("routes"):
+        raise ValueError("No route found between these locations")
     route = data["routes"][0]
-    distance_meters = route["summary"]["distance"]
-    duration_seconds = route["summary"]["duration"]
-    geometry = route["geometry"]
+    distance_meters = route["distance"]
+    duration_seconds = route["duration"]
+    geometry = route["geometry"]  # already an encoded polyline, precision 5, same as before
     return {
         "distance_miles": distance_meters / 1609.34,
         "duration_hr": duration_seconds / 3600,
