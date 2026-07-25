@@ -62,9 +62,12 @@ def calculate_trip(request):
 @api_view(["GET"])
 def test_outbound(request):
     import requests, time
+    from django.conf import settings
     start = time.time()
     try:
-        resp = requests.get("https://httpbin.org/get", timeout=15)
+        url = "https://api.openrouteservice.org/geocode/search"
+        params = {"api_key": settings.ORS_API_KEY, "text": "Chicago, IL", "size": 1}
+        resp = requests.get(url, params=params, timeout=15)
         return Response({"status": "ok", "time": time.time() - start, "code": resp.status_code})
     except Exception as e:
         return Response({"status": "failed", "time": time.time() - start, "error": str(e)})
