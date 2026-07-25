@@ -8,7 +8,7 @@ def geocode(place_name):
     """Convert a place name into (longitude, latitude)."""
     url = f"{ORS_BASE}/geocode/search"
     params = {"api_key": settings.ORS_API_KEY, "text": place_name, "size": 1}
-    resp = requests.get(url, params=params, timeout=10)
+    resp = requests.get(url, params=params, timeout=25)
     resp.raise_for_status()
     data = resp.json()
     if not data.get("features"):
@@ -22,7 +22,7 @@ def get_route(start_coords, end_coords):
     url = f"{ORS_BASE}/v2/directions/driving-car"
     headers = {"Authorization": settings.ORS_API_KEY, "Content-Type": "application/json"}
     body = {"coordinates": [start_coords, end_coords]}
-    resp = requests.post(url, json=body, headers=headers, timeout=15)
+    resp = requests.post(url, json=body, headers=headers, timeout=25)
     resp.raise_for_status()
     data = resp.json()
     route = data["routes"][0]
